@@ -6,32 +6,35 @@ const TradeTracker = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch trades on component mount
-  useEffect(() => {
-    fetchTrades();
-  }, []);
-
   const fetchTrades = async () => {
     try {
       const response = await fetch('/api/trades');
-      if (!response.ok) throw new Error('Failed to fetch trades');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setTrades(data);
-      setLoading(false);
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error('Fetch error:', err);
+      setError('Failed to load trades');
+    } finally {
       setLoading(false);
     }
   };
 
-  const addRow = async () => {
-    const newTrade = {
-      spreadEntryExit: '',
-      total: '',
-      entrys: ''
-    };
+  useEffect(() => {
+    fetchTrades();
+  }, []);
 
+  const addTrade = async () => {
     try {
+      const newTrade = {
+        spreadEntryExit: '',
+        total: '',
+        entrys: ''
+      };
+
       const response = await fetch('/api/trades', {
         method: 'POST',
         headers: {
@@ -40,53 +43,41 @@ const TradeTracker = () => {
         body: JSON.stringify(newTrade),
       });
 
-      if (!response.ok) throw new Error('Failed to add trade');
-      await fetchTrades(); // Refresh the list
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      fetchTrades(); // Refresh the list
     } catch (err) {
-      setError(err.message);
+      console.error('Add trade error:', err);
+      setError('Failed to add trade');
     }
   };
 
-  const updateField = async (id, field, value) => {
+  const updateTrade = async (index, field, value) => {
     try {
-      const response = await fetch(`/api/trades/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ [field]: value }),
-      });
+      const updatedTrades = [...trades];
+      updatedTrades[index] = {
+        ...updatedTrades[index],
+        [field]: value
+      };
+      setTrades(updatedTrades);
 
-      if (!response.ok) throw new Error('Failed to update trade');
-      await fetchTrades(); // Refresh the list
+      // You can add API call here to update Google Sheet if needed
     } catch (err) {
-      setError(err.message);
+      console.error('Update trade error:', err);
+      setError('Failed to update trade');
     }
   };
 
-  const deleteRow = async (id) => {
-    try {
-      const response = await fetch(`/api/trades/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Failed to delete trade');
-      await fetchTrades(); // Refresh the list
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">Loading trades...</div>;
   if (error) return <div className="error">{error}</div>;
 
   return (
     <div className="trade-tracker">
       <div className="header">
         <h2>Trade Tracker</h2>
-        <button className="add-button" onClick={addRow}>
-          Add Trade
-        </button>
+        <button className="add-button" onClick={addTrade}>Add Trade</button>
       </div>
 
       <table className="trade-table">
@@ -95,7 +86,6 @@ const TradeTracker = () => {
             <th>Spread Entry/Exit</th>
             <th>Total</th>
             <th>Entry's</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -105,15 +95,15 @@ const TradeTracker = () => {
                 <input
                   type="text"
                   value={trade.spreadEntryExit}
-                  onChange={(e) => updateField(index, 'spreadEntryExit', e.target.value)}
+                  onChange={(e) => updateTrade(index, 'spreadEntryExit', e.target.value)}
                   className="text-input"
                 />
               </td>
               <td>
                 <input
-                  type="number"
+                  type="text"
                   value={trade.total}
-                  onChange={(e) => updateField(index, 'total', e.target.value)}
+                  onChange={(e) => updateTrade(index, 'total', e.target.value)}
                   className="number-input"
                 />
               </td>
@@ -121,17 +111,9 @@ const TradeTracker = () => {
                 <input
                   type="text"
                   value={trade.entrys}
-                  onChange={(e) => updateField(index, 'entrys', e.target.value)}
+                  onChange={(e) => updateTrade(index, 'entrys', e.target.value)}
                   className="text-input"
                 />
-              </td>
-              <td>
-                <button 
-                  onClick={() => deleteRow(index)}
-                  className="delete-button"
-                >
-                  Delete
-                </button>
               </td>
             </tr>
           ))}
