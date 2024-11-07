@@ -14,7 +14,9 @@ export default async function handler(req, res) {
 
   // Load service account credentials
   const credentials = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), 'config/your-credentials.json'))
+    fs.readFileSync(
+      path.join(process.cwd(), '../../../config/your-credentials.json')
+    )
   );
 
   // Set up authentication
