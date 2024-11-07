@@ -3,13 +3,13 @@ import path from 'path';
 import fs from 'fs';
 
 export default async function handler(req, res) {
-  // handle COORS
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST'); // Allow GET and POST methods
-
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Allow GET, POST, and OPTIONS methods
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Handle preflight request
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
+    return res.status(200).end(); // Respond to OPTIONS requests with 200 to end preflight check
   }
 
   // Load service account credentials
@@ -29,6 +29,10 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     // Adding a new entry to the Google Sheet
     const { type, category, name, dollarAmount, frequency } = req.body;
+    console.log('Received data:', req.body); // Log incoming data
+    const parsedBody =
+      typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    console.log('Parsed data:', parsedBody);
 
     try {
       await sheets.spreadsheets.values.append({
