@@ -9,15 +9,21 @@ const TradeTracker = () => {
   const fetchTrades = async () => {
     try {
       const response = await fetch('/api/trades');
+      
       if (!response.ok) {
+        console.error('API Response not OK:', response.status, response.statusText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
       const data = await response.json();
-      setTrades(data);
+      console.log('Fetched data:', data); // Debug log
+      setTrades(data || []);
       setError(null);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError('Failed to load trades');
+      setError('Unable to load existing trades. Starting with empty table.');
+      // Keep trades as empty array instead of failing
+      setTrades([]);
     } finally {
       setLoading(false);
     }
@@ -27,51 +33,40 @@ const TradeTracker = () => {
     fetchTrades();
   }, []);
 
-  const addTrade = async () => {
-    try {
-      const newTrade = {
-        spreadEntryExit: '',
-        total: '',
-        entrys: ''
-      };
-
-      const response = await fetch('/api/trades', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTrade),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      fetchTrades(); // Refresh the list
-    } catch (err) {
-      console.error('Add trade error:', err);
-      setError('Failed to add trade');
-    }
+  const addTrade = () => {
+    const newTrade = {
+      spreadEntryExit: '',
+      total: '',
+      entrys: ''
+    };
+    setTrades([...trades, newTrade]);
   };
 
-  const updateTrade = async (index, field, value) => {
-    try {
-      const updatedTrades = [...trades];
-      updatedTrades[index] = {
-        ...updatedTrades[index],
-        [field]: value
-      };
-      setTrades(updatedTrades);
-
-      // You can add API call here to update Google Sheet if needed
-    } catch (err) {
-      console.error('Update trade error:', err);
-      setError('Failed to update trade');
-    }
+  const updateTrade = (index, field, value) => {
+    const updatedTrades = [...trades];
+    updatedTrades[index] = {
+      ...updatedTrades[index],
+      [field]: value
+    };
+    setTrades(updatedTrades);
   };
 
-  if (loading) return <div className="loading">Loading trades...</div>;
-  if (error) return <div className="error">{error}</div>;
+  const deleteTrade = (index) => {
+    const updatedTrades = trades.filter((_, i) => i !== index);
+    setTrades(updatedTrades);
+  };
+
+  // Show loading state but only briefly
+  if (loading) {
+    return (
+      <div className="trade-tracker">
+        <div className="header">
+          <h2>Trade Tracker</h2>
+          <div className="loading">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="trade-tracker">
@@ -79,6 +74,8 @@ const TradeTracker = () => {
         <h2>Trade Tracker</h2>
         <button className="add-button" onClick={addTrade}>Add Trade</button>
       </div>
+      
+      {error && <div className="error-banner">{error}</div>}
 
       <table className="trade-table">
         <thead>
@@ -86,37 +83,57 @@ const TradeTracker = () => {
             <th>Spread Entry/Exit</th>
             <th>Total</th>
             <th>Entry's</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {trades.map((trade, index) => (
-            <tr key={index}>
-              <td>
-                <input
-                  type="text"
-                  value={trade.spreadEntryExit}
-                  onChange={(e) => updateTrade(index, 'spreadEntryExit', e.target.value)}
-                  className="text-input"
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  value={trade.total}
-                  onChange={(e) => updateTrade(index, 'total', e.target.value)}
-                  className="number-input"
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  value={trade.entrys}
-                  onChange={(e) => updateTrade(index, 'entrys', e.target.value)}
-                  className="text-input"
-                />
+          {trades.length === 0 ? (
+            <tr>
+              <td colSpan="4" className="empty-state">
+                No trades yet. Click "Add Trade" to get started.
               </td>
             </tr>
-          ))}
+          ) : (
+            trades.map((trade, index) => (
+              <tr key={index}>
+                <td>
+                  <input
+                    type="text"
+                    value={trade.spreadEntryExit || ''}
+                    onChange={(e) => updateTrade(index, 'spreadEntryExit', e.target.value)}
+                    className="text-input"
+                    placeholder="Enter spread"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    value={trade.total || ''}
+                    onChange={(e) => updateTrade(index, 'total', e.target.value)}
+                    className="number-input"
+                    placeholder="Enter total"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    value={trade.entrys || ''}
+                    onChange={(e) => updateTrade(index, 'entrys', e.target.value)}
+                    className="text-input"
+                    placeholder="Enter entry's"
+                  />
+                </td>
+                <td>
+                  <button 
+                    onClick={() => deleteTrade(index)}
+                    className="delete-button"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

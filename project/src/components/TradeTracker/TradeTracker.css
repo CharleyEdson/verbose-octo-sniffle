@@ -34,6 +34,7 @@
     border-collapse: collapse;
     background-color: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
   }
   
   .trade-table th,
@@ -56,6 +57,13 @@
     border-radius: 4px;
   }
   
+  .text-input:focus,
+  .number-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+  }
+  
   .delete-button {
     background-color: #ff4444;
     color: white;
@@ -72,12 +80,51 @@
   .loading {
     text-align: center;
     padding: 20px;
-    font-size: 18px;
+    font-size: 16px;
+    color: #666;
   }
   
-  .error {
-    color: #ff4444;
+  .error-banner {
+    background-color: #fff3f3;
+    color: #d63031;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border: 1px solid #ff9999;
+  }
+  
+  .empty-state {
     text-align: center;
-    padding: 20px;
-    font-size: 18px;
+    color: #666;
+    padding: 40px !important;
+    font-style: italic;
+  }
+  
+  /* Input placeholder styles */
+  .text-input::placeholder,
+  .number-input::placeholder {
+    color: #999;
+    font-style: italic;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .trade-tracker {
+      padding: 10px;
+    }
+    
+    .trade-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    
+    .header {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .add-button {
+      width: 100%;
+    }
   }
