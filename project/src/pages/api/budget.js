@@ -3,6 +3,15 @@ import path from 'path';
 import fs from 'fs';
 
 export default async function handler(req, res) {
+  // handle COORS
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST'); // Allow GET and POST methods
+
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+
   // Load service account credentials
   const credentials = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), 'config/your-credentials.json'))
