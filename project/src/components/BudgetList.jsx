@@ -7,7 +7,7 @@ const BudgetList = () => {
   useEffect(() => {
     const fetchData = async () => {
       const data = await getBudgetData();
-      setBudgetData(data);
+      setBudgetData(Array.isArray(data) ? data : []); // Ensure data is an array
     };
     fetchData();
   }, []);
@@ -15,13 +15,17 @@ const BudgetList = () => {
   return (
     <div>
       <h2>Budget Entries</h2>
-      <ul>
-        {budgetData.map((entry, index) => (
-          <li key={index}>
-            {entry[0]} - {entry[1]} - {entry[2]} - ${entry[3]} ({entry[4]})
-          </li>
-        ))}
-      </ul>
+      {budgetData.length === 0 ? (
+        <p>No budget entries found.</p>
+      ) : (
+        <ul>
+          {budgetData.map((entry, index) => (
+            <li key={index}>
+              {entry[0]} - {entry[1]} - {entry[2]} - ${entry[3]} ({entry[4]})
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

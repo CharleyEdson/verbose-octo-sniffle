@@ -8,10 +8,12 @@ export async function getBudgetData() {
       throw new Error('Failed to fetch budget data');
     }
     const data = await response.json();
-    return data;
+
+    // Ensure data is an array
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Error fetching budget data:', error);
-    return [];
+    return []; // Return an empty array in case of an error
   }
 }
 
