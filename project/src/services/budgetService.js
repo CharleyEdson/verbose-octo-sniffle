@@ -1,4 +1,4 @@
-const API_URL = 'https://budget-api-layer.vercel.app/budget';
+const API_URL = 'https://budget-api-layer.vercel.app/api/budget';
 
 // Fetch all budget entries
 export async function getBudgetData() {
