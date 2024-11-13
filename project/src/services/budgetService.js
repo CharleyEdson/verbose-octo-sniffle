@@ -1,4 +1,4 @@
-const API_URL = 'https://verbose-octo-sniffle.vercel.app/api/budget';
+const API_URL = 'https://budget-api-layer.vercel.app/budget';
 
 // Fetch all budget entries
 export async function getBudgetData() {
